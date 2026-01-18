@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 350px;
+      max-height: 500px;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #15202b;
+      color: #e7e9ea;
+    }
+
+    .header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #38444d;
+    }
+
+    .header h1 {
+      margin: 0 0 12px 0;
+      font-size: 16px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      color: #71767b;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      background: #1e2732;
+      color: #e7e9ea;
+    }
+
+    .tab.active {
+      background: #1d9bf0;
+      color: white;
+    }
+
+    .count {
+      background: #38444d;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .search-box {
+      padding: 12px;
+      border-bottom: 1px solid #38444d;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 9999px;
+      border: 1px solid #38444d;
+      background: #273340;
+      color: #e7e9ea;
+      font-size: 14px;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #1d9bf0;
+    }
+
+    .search-box input::placeholder {
+      color: #6e767d;
+    }
+
+    .blocks-list {
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .block-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #38444d;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .block-item:hover {
+      background: #1c2938;
+    }
+
+    .block-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .block-username {
+      font-weight: 700;
+      color: #1d9bf0;
+    }
+
+    .block-category {
+      background: #38444d;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+    }
+
+    .block-tweet-container {
+      margin-top: 6px;
+      padding: 6px 8px;
+      background: #1e2732;
+      border-radius: 6px;
+    }
+
+    .block-tweet {
+      font-size: 12px;
+      color: #71767b;
+      font-style: italic;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .block-media {
+      font-size: 11px;
+      color: #536471;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .block-tweet-link {
+      font-size: 11px;
+      color: #1d9bf0;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 4px;
+    }
+
+    .block-tweet-link:hover {
+      text-decoration: underline;
+    }
+
+    .block-reason {
+      font-size: 13px;
+      color: #8b98a5;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .block-date {
+      font-size: 11px;
+      color: #6e767d;
+      margin-top: 4px;
+    }
+
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: #6e767d;
+    }
+
+    .empty-state p {
+      margin: 8px 0 0;
+      font-size: 14px;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #f4212e;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .block-item:hover .delete-btn {
+      opacity: 1;
+    }
+
+    .delete-btn:hover {
+      background: rgba(244, 33, 46, 0.1);
+    }
+
+    /* Settings styles */
+    .settings-section {
+      padding: 16px;
+    }
+
+    .settings-section h3 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      color: #71767b;
+    }
+
+    .category-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .category-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      background: #1e2732;
+      border-radius: 8px;
+    }
+
+    .category-item input {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid #38444d;
+      border-radius: 6px;
+      background: #273340;
+      color: #e7e9ea;
+      font-size: 13px;
+    }
+
+    .category-item input:focus {
+      outline: none;
+      border-color: #1d9bf0;
+    }
+
+    .category-item .drag-handle {
+      cursor: grab;
+      color: #536471;
+      padding: 4px;
+    }
+
+    .category-item .delete-cat-btn {
+      background: none;
+      border: none;
+      color: #f4212e;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-size: 16px;
+      opacity: 0.7;
+    }
+
+    .category-item .delete-cat-btn:hover {
+      opacity: 1;
+    }
+
+    .add-category {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .add-category input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #38444d;
+      border-radius: 6px;
+      background: #273340;
+      color: #e7e9ea;
+      font-size: 13px;
+    }
+
+    .add-category input:focus {
+      outline: none;
+      border-color: #1d9bf0;
+    }
+
+    .add-category button {
+      padding: 8px 16px;
+      background: #1d9bf0;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .add-category button:hover {
+      background: #1a8cd8;
+    }
+
+    .reset-btn {
+      margin-top: 16px;
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid #536471;
+      border-radius: 6px;
+      color: #e7e9ea;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .reset-btn:hover {
+      background: #1e2732;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Why Did I Block Them?</h1>
+    <div class="tabs">
+      <button class="tab active" data-tab="blocks">Blocks <span class="count" id="count">0</span></button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </div>
+  </div>
+
+  <div id="blocks-tab" class="tab-content active">
+    <div class="search-box">
+      <input type="text" id="search" placeholder="Search blocked users...">
+    </div>
+
+    <div class="blocks-list" id="blocks-list">
+      <div class="empty-state">
+        <p>No blocked users recorded yet.</p>
+        <p>Block someone on Twitter to get started!</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="settings-tab" class="tab-content">
+    <div class="settings-section">
+      <h3>Categories</h3>
+      <div class="category-list" id="category-list"></div>
+      <div class="add-category">
+        <input type="text" id="new-category" placeholder="New category name...">
+        <button id="add-category-btn">Add</button>
+      </div>
+      <button class="reset-btn" id="reset-categories">Reset to Defaults</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
