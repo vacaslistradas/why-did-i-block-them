@@ -238,16 +238,12 @@
   margin-top: 4px;
 }
 
-.tbr-banner-links {
-  display: flex;
-  gap: 12px;
-  margin-top: 6px;
-}
-
 .tbr-banner-link {
   font-size: 12px;
   color: #1d9bf0;
   text-decoration: none;
+  display: inline-block;
+  margin-top: 6px;
 }
 
 .tbr-banner-link:hover {

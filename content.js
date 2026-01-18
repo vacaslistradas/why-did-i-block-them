@@ -323,53 +323,18 @@ function showReasonModal(username) {
 function saveBlockReason(username, category, reason, tweetData) {
   chrome.storage.local.get(['blocks'], (result) => {
     const blocks = result.blocks || {};
-    const blockData = {
+    blocks[username.toLowerCase()] = {
       username: username,
       category: category || null,
       reason: reason || '',
       tweet: tweetData ? tweetData.text : null,
       tweetUrl: tweetData ? tweetData.url : null,
       tweetMedia: tweetData ? tweetData.media : null,
-      tweetArchiveUrl: null,
       date: new Date().toISOString()
     };
-    blocks[username.toLowerCase()] = blockData;
     chrome.storage.local.set({ blocks });
-    log('Block saved:', blockData);
-
-    // Archive the tweet in the background
-    if (tweetData && tweetData.url) {
-      archiveTweet(username.toLowerCase(), tweetData.url);
-    }
+    log('Block saved:', blocks[username.toLowerCase()]);
   });
-}
-
-// Archive tweet to the Wayback Machine
-async function archiveTweet(usernameKey, tweetUrl) {
-  try {
-    log('Archiving tweet:', tweetUrl);
-    const response = await fetch(`https://web.archive.org/save/${tweetUrl}`, {
-      method: 'GET',
-      mode: 'no-cors' // Wayback Machine doesn't support CORS, but the save still works
-    });
-
-    // Since we can't read the response due to no-cors, construct the archive URL
-    // The archive URL format is: https://web.archive.org/web/<timestamp>/<url>
-    // We'll use a generic "latest" format that redirects to the most recent snapshot
-    const archiveUrl = `https://web.archive.org/web/${tweetUrl}`;
-
-    // Update the stored block with the archive URL
-    chrome.storage.local.get(['blocks'], (result) => {
-      const blocks = result.blocks || {};
-      if (blocks[usernameKey]) {
-        blocks[usernameKey].tweetArchiveUrl = archiveUrl;
-        chrome.storage.local.set({ blocks });
-        log('Archive URL saved:', archiveUrl);
-      }
-    });
-  } catch (err) {
-    log('Failed to archive tweet:', err);
-  }
 }
 
 // Escape HTML to prevent XSS
@@ -439,10 +404,7 @@ function showBlockReasonBanner(blockInfo) {
     ? `<div class="tbr-banner-tweet-container">
         ${blockInfo.tweet ? `<p class="tbr-banner-tweet">"${escapeHtml(blockInfo.tweet)}"</p>` : ''}
         ${blockInfo.tweetMedia ? `<span class="tbr-banner-media">Contains: ${blockInfo.tweetMedia}</span>` : ''}
-        <div class="tbr-banner-links">
-          ${blockInfo.tweetUrl ? `<a href="${blockInfo.tweetUrl}" target="_blank" class="tbr-banner-link">View tweet</a>` : ''}
-          ${blockInfo.tweetArchiveUrl ? `<a href="${blockInfo.tweetArchiveUrl}" target="_blank" class="tbr-banner-link">View archived</a>` : ''}
-        </div>
+        ${blockInfo.tweetUrl ? `<a href="${blockInfo.tweetUrl}" target="_blank" class="tbr-banner-link">View tweet</a>` : ''}
       </div>`
     : '';
 
