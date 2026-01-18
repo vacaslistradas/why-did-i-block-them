@@ -76,7 +76,10 @@ function renderBlocks(blocks) {
       ? `<div class="block-tweet-container">
           ${block.tweet ? `<div class="block-tweet">"${escapeHtml(block.tweet)}"</div>` : ''}
           ${block.tweetMedia ? `<span class="block-media">${block.tweetMedia}</span>` : ''}
-          ${block.tweetUrl ? `<a href="${block.tweetUrl}" target="_blank" class="block-tweet-link" onclick="event.stopPropagation()">View tweet</a>` : ''}
+          <div class="block-tweet-links">
+            ${block.tweetUrl ? `<a href="${block.tweetUrl}" target="_blank" class="block-tweet-link" onclick="event.stopPropagation()">View tweet</a>` : ''}
+            ${block.tweetArchiveUrl ? `<a href="${block.tweetArchiveUrl}" target="_blank" class="block-tweet-link" onclick="event.stopPropagation()">Archived</a>` : ''}
+          </div>
         </div>`
       : '';
 
