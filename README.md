@@ -11,6 +11,7 @@ A Chrome extension that helps you remember why you blocked someone on Twitter/X.
 - **Search & manage** - Browse, search, and manage your block list from the extension popup
 - **View original tweet** - Link back to the tweet that caused the block (if still available)
 - **Customizable categories** - Add, edit, or delete categories in Settings
+- **Sync across devices** - Data syncs across all Chrome browsers where you're logged in
 
 ## Installation
 
@@ -33,7 +34,7 @@ To view your block list, click the extension icon in the toolbar.
 
 ## Data Storage
 
-All data is stored locally in your browser using Chrome's storage API. Nothing is sent to any server.
+Your data syncs across all Chrome browsers where you're logged into your Google account using Chrome's sync storage. Nothing is sent to any third-party server.
 
 ## Notes
 
