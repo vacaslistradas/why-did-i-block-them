@@ -16,12 +16,12 @@ let allBlocks = {};
 // Load categories from storage
 function loadCategories() {
   return new Promise((resolve) => {
-    chrome.storage.local.get(['categories'], (result) => {
+    chrome.storage.sync.get(['categories'], (result) => {
       if (result.categories && result.categories.length > 0) {
         categories = result.categories;
       } else {
         categories = [...DEFAULT_CATEGORIES];
-        chrome.storage.local.set({ categories });
+        chrome.storage.sync.set({ categories });
       }
       resolve(categories);
     });
@@ -30,7 +30,7 @@ function loadCategories() {
 
 // Save categories to storage
 function saveCategories() {
-  chrome.storage.local.set({ categories });
+  chrome.storage.sync.set({ categories });
 }
 
 // Get category label by id
@@ -41,7 +41,7 @@ function getCategoryLabel(id) {
 
 // Load and display blocks
 function loadBlocks() {
-  chrome.storage.local.get(['blocks'], (result) => {
+  chrome.storage.sync.get(['blocks'], (result) => {
     allBlocks = result.blocks || {};
     renderBlocks(allBlocks);
   });
@@ -116,10 +116,10 @@ function renderBlocks(blocks) {
 
 // Delete a block record
 function deleteBlock(username) {
-  chrome.storage.local.get(['blocks'], (result) => {
+  chrome.storage.sync.get(['blocks'], (result) => {
     const blocks = result.blocks || {};
     delete blocks[username];
-    chrome.storage.local.set({ blocks }, () => {
+    chrome.storage.sync.set({ blocks }, () => {
       loadBlocks();
     });
   });

@@ -21,12 +21,12 @@ let currentBlockTarget = null;
 // Load categories from storage
 function loadCategories() {
   return new Promise((resolve) => {
-    chrome.storage.local.get(['categories'], (result) => {
+    chrome.storage.sync.get(['categories'], (result) => {
       if (result.categories && result.categories.length > 0) {
         CATEGORIES = result.categories;
       } else {
         // Initialize with defaults
-        chrome.storage.local.set({ categories: DEFAULT_CATEGORIES });
+        chrome.storage.sync.set({ categories: DEFAULT_CATEGORIES });
         CATEGORIES = [...DEFAULT_CATEGORIES];
       }
       log('Categories loaded:', CATEGORIES);
@@ -321,7 +321,7 @@ function showReasonModal(username) {
 
 // Save block reason to storage
 function saveBlockReason(username, category, reason, tweetData) {
-  chrome.storage.local.get(['blocks'], (result) => {
+  chrome.storage.sync.get(['blocks'], (result) => {
     const blocks = result.blocks || {};
     blocks[username.toLowerCase()] = {
       username: username,
@@ -332,7 +332,7 @@ function saveBlockReason(username, category, reason, tweetData) {
       tweetMedia: tweetData ? tweetData.media : null,
       date: new Date().toISOString()
     };
-    chrome.storage.local.set({ blocks });
+    chrome.storage.sync.set({ blocks });
     log('Block saved:', blocks[username.toLowerCase()]);
   });
 }
@@ -368,7 +368,7 @@ function checkForBlockedProfile() {
     return;
   }
 
-  chrome.storage.local.get(['blocks'], (result) => {
+  chrome.storage.sync.get(['blocks'], (result) => {
     const blocks = result.blocks || {};
     log('Looking for block info, blocks:', Object.keys(blocks));
     const blockInfo = blocks[username];
