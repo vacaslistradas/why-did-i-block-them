@@ -5,6 +5,11 @@
   "description": "Remember why you blocked someone on Twitter/X",
   "permissions": ["storage"],
   "host_permissions": ["https://twitter.com/*", "https://x.com/*"],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
   "content_scripts": [
     {
       "matches": ["https://twitter.com/*", "https://x.com/*"],
@@ -14,6 +19,11 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "View Block Reasons"
+    "default_title": "View Block Reasons",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
   }
 }
