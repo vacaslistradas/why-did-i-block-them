@@ -39,6 +39,12 @@ function getCategoryLabel(id) {
   return cat ? cat.label : '';
 }
 
+// Get all category labels for a block (supports both old and new format)
+function getCategoryLabels(block) {
+  const cats = block.categories || (block.category ? [block.category] : []);
+  return cats.map(id => getCategoryLabel(id)).filter(Boolean);
+}
+
 // Load and display blocks
 function loadBlocks() {
   chrome.storage.sync.get(['blocks'], (result) => {
@@ -69,7 +75,7 @@ function renderBlocks(blocks) {
   entries.sort((a, b) => new Date(b[1].date) - new Date(a[1].date));
 
   container.innerHTML = entries.map(([key, block]) => {
-    const categoryLabel = block.category ? getCategoryLabel(block.category) : '';
+    const categoryLabels = getCategoryLabels(block);
     const dateStr = new Date(block.date).toLocaleDateString();
 
     const tweetInfo = block.tweet || block.tweetMedia
@@ -84,8 +90,9 @@ function renderBlocks(blocks) {
       <div class="block-item" data-username="${key}">
         <div class="block-item-header">
           <span class="block-username">@${block.username}</span>
-          <div>
-            ${categoryLabel ? `<span class="block-category">${categoryLabel}</span>` : ''}
+          <div class="block-item-actions">
+            ${categoryLabels.map(label => `<span class="block-category">${label}</span>`).join('')}
+            <button class="edit-btn" data-username="${key}">Edit</button>
             <button class="delete-btn" data-username="${key}">Delete</button>
           </div>
         </div>
@@ -99,9 +106,17 @@ function renderBlocks(blocks) {
   // Add click handlers
   container.querySelectorAll('.block-item').forEach(item => {
     item.addEventListener('click', (e) => {
-      if (e.target.classList.contains('delete-btn')) return;
+      if (e.target.classList.contains('delete-btn') || e.target.classList.contains('edit-btn')) return;
       const username = item.dataset.username;
       chrome.tabs.create({ url: `https://twitter.com/${username}` });
+    });
+  });
+
+  container.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const username = btn.dataset.username;
+      showEditModal(username, allBlocks[username]);
     });
   });
 
@@ -122,6 +137,78 @@ function deleteBlock(username) {
     chrome.storage.sync.set({ blocks }, () => {
       loadBlocks();
     });
+  });
+}
+
+// Show edit modal for a block entry
+function showEditModal(username, block) {
+  // Remove existing modal if any
+  const existing = document.getElementById('edit-modal-overlay');
+  if (existing) existing.remove();
+
+  // Get current categories (support both old and new format)
+  const currentCats = block.categories || (block.category ? [block.category] : []);
+
+  const overlay = document.createElement('div');
+  overlay.id = 'edit-modal-overlay';
+  overlay.innerHTML = `
+    <div class="edit-modal">
+      <div class="edit-modal-header">
+        <h2>Edit @${block.username}</h2>
+        <button class="edit-close-btn">&times;</button>
+      </div>
+      <div class="edit-modal-body">
+        <label class="edit-label">Categories</label>
+        <div class="edit-categories">
+          ${categories.map(cat => `
+            <label class="edit-category">
+              <input type="checkbox" name="edit-category" value="${cat.id}" ${currentCats.includes(cat.id) ? 'checked' : ''}>
+              <span>${cat.label}</span>
+            </label>
+          `).join('')}
+        </div>
+        <label class="edit-label">Notes</label>
+        <textarea class="edit-reason-input" rows="2">${escapeHtml(block.reason || '')}</textarea>
+      </div>
+      <div class="edit-modal-footer">
+        <button class="edit-cancel-btn">Cancel</button>
+        <button class="edit-save-btn">Save</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // Event listeners
+  overlay.querySelector('.edit-close-btn').addEventListener('click', () => overlay.remove());
+  overlay.querySelector('.edit-cancel-btn').addEventListener('click', () => overlay.remove());
+  overlay.querySelector('.edit-save-btn').addEventListener('click', () => {
+    const checkedBoxes = overlay.querySelectorAll('input[name="edit-category"]:checked');
+    const newCategories = Array.from(checkedBoxes).map(cb => cb.value);
+    const newReason = overlay.querySelector('.edit-reason-input').value.trim();
+
+    saveEditedBlock(username, newCategories, newReason);
+    overlay.remove();
+  });
+
+  // Close on overlay click
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+}
+
+// Save edited block
+function saveEditedBlock(username, categories, reason) {
+  chrome.storage.sync.get(['blocks'], (result) => {
+    const blocks = result.blocks || {};
+    if (blocks[username]) {
+      blocks[username].categories = categories;
+      blocks[username].category = categories.length > 0 ? categories[0] : null;
+      blocks[username].reason = reason;
+      chrome.storage.sync.set({ blocks }, () => {
+        loadBlocks();
+      });
+    }
   });
 }
 
@@ -225,6 +312,101 @@ function setupResetCategories() {
   });
 }
 
+// Render stats dashboard
+function renderStats() {
+  const container = document.getElementById('stats-content');
+  const entries = Object.entries(allBlocks);
+
+  if (entries.length === 0) {
+    container.innerHTML = `
+      <div class="stats-empty">
+        <p>No data yet. Block someone on Twitter to see stats!</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Count by category
+  const categoryCounts = {};
+  categories.forEach(cat => {
+    categoryCounts[cat.id] = { label: cat.label, count: 0 };
+  });
+
+  entries.forEach(([_, block]) => {
+    const cats = block.categories || (block.category ? [block.category] : []);
+    cats.forEach(catId => {
+      if (categoryCounts[catId]) {
+        categoryCounts[catId].count++;
+      }
+    });
+  });
+
+  // Sort categories by count
+  const sortedCategories = Object.entries(categoryCounts)
+    .filter(([_, data]) => data.count > 0)
+    .sort((a, b) => b[1].count - a[1].count);
+
+  // Blocks by month
+  const monthCounts = {};
+  entries.forEach(([_, block]) => {
+    const date = new Date(block.date);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthLabel = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+    if (!monthCounts[monthKey]) {
+      monthCounts[monthKey] = { label: monthLabel, count: 0 };
+    }
+    monthCounts[monthKey].count++;
+  });
+
+  // Sort months newest first
+  const sortedMonths = Object.entries(monthCounts)
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .slice(0, 6);  // Show last 6 months
+
+  // Find max for bar scaling
+  const maxCatCount = Math.max(...sortedCategories.map(([_, d]) => d.count), 1);
+  const maxMonthCount = Math.max(...sortedMonths.map(([_, d]) => d.count), 1);
+
+  container.innerHTML = `
+    <div class="stats-section">
+      <div class="stats-total">
+        <span class="stats-total-number">${entries.length}</span>
+        <span class="stats-total-label">Total Blocked</span>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <h3>By Category</h3>
+      <div class="stats-bars">
+        ${sortedCategories.length > 0 ? sortedCategories.map(([_, data]) => `
+          <div class="stats-bar-row">
+            <span class="stats-bar-label">${data.label}</span>
+            <div class="stats-bar-container">
+              <div class="stats-bar" style="width: ${(data.count / maxCatCount) * 100}%"></div>
+            </div>
+            <span class="stats-bar-count">${data.count}</span>
+          </div>
+        `).join('') : '<p class="stats-none">No categories assigned yet</p>'}
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <h3>Recent Activity</h3>
+      <div class="stats-bars">
+        ${sortedMonths.map(([_, data]) => `
+          <div class="stats-bar-row">
+            <span class="stats-bar-label">${data.label}</span>
+            <div class="stats-bar-container">
+              <div class="stats-bar stats-bar-month" style="width: ${(data.count / maxMonthCount) * 100}%"></div>
+            </div>
+            <span class="stats-bar-count">${data.count}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
 // Tab switching
 function setupTabs() {
   document.querySelectorAll('.tab').forEach(tab => {
@@ -240,9 +422,11 @@ function setupTabs() {
       });
       document.getElementById(`${tabName}-tab`).classList.add('active');
 
-      // Render categories when settings tab is opened
+      // Render content when tabs are opened
       if (tabName === 'settings') {
         renderCategories();
+      } else if (tabName === 'stats') {
+        renderStats();
       }
     });
   });

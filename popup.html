@@ -324,6 +324,271 @@
     .reset-btn:hover {
       background: #1e2732;
     }
+
+    /* Block item actions */
+    .block-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .edit-btn {
+      background: none;
+      border: none;
+      color: #1d9bf0;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .block-item:hover .edit-btn {
+      opacity: 1;
+    }
+
+    .edit-btn:hover {
+      background: rgba(29, 155, 240, 0.1);
+    }
+
+    /* Edit Modal */
+    #edit-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 10px;
+      z-index: 10000;
+    }
+
+    .edit-modal {
+      background: #15202b;
+      border-radius: 12px;
+      width: 95%;
+      max-height: 480px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .edit-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid #38444d;
+      flex-shrink: 0;
+    }
+
+    .edit-modal-header h2 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .edit-close-btn {
+      background: none;
+      border: none;
+      color: #e7e9ea;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .edit-modal-body {
+      padding: 12px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .edit-label {
+      display: block;
+      font-size: 13px;
+      color: #71767b;
+      margin-bottom: 8px;
+    }
+
+    .edit-categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .edit-category {
+      cursor: pointer;
+    }
+
+    .edit-category input {
+      display: none;
+    }
+
+    .edit-category span {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 9999px;
+      border: 1px solid #38444d;
+      font-size: 11px;
+      transition: all 0.2s;
+    }
+
+    .edit-category:hover span {
+      border-color: #1d9bf0;
+    }
+
+    .edit-category input:checked + span {
+      background: #1d9bf0;
+      border-color: #1d9bf0;
+      color: white;
+    }
+
+    .edit-reason-input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #38444d;
+      background: #273340;
+      color: #e7e9ea;
+      font-size: 13px;
+      resize: none;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .edit-reason-input:focus {
+      outline: none;
+      border-color: #1d9bf0;
+    }
+
+    .edit-modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 10px 12px;
+      border-top: 1px solid #38444d;
+      flex-shrink: 0;
+    }
+
+    .edit-cancel-btn,
+    .edit-save-btn {
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .edit-cancel-btn {
+      background: transparent;
+      border: 1px solid #536471;
+      color: #e7e9ea;
+    }
+
+    .edit-save-btn {
+      background: #1d9bf0;
+      border: none;
+      color: white;
+    }
+
+    /* Stats styles */
+    .stats-container {
+      padding: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .stats-section {
+      margin-bottom: 20px;
+    }
+
+    .stats-section h3 {
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      color: #71767b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stats-total {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background: #1e2732;
+      border-radius: 12px;
+    }
+
+    .stats-total-number {
+      font-size: 48px;
+      font-weight: 700;
+      color: #1d9bf0;
+    }
+
+    .stats-total-label {
+      font-size: 14px;
+      color: #71767b;
+      margin-top: 4px;
+    }
+
+    .stats-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stats-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stats-bar-label {
+      width: 80px;
+      font-size: 12px;
+      color: #8b98a5;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .stats-bar-container {
+      flex: 1;
+      height: 20px;
+      background: #273340;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .stats-bar {
+      height: 100%;
+      background: #1d9bf0;
+      border-radius: 4px;
+      min-width: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .stats-bar-month {
+      background: #7856ff;
+    }
+
+    .stats-bar-count {
+      width: 30px;
+      font-size: 12px;
+      color: #e7e9ea;
+      font-weight: 600;
+    }
+
+    .stats-empty,
+    .stats-none {
+      text-align: center;
+      color: #6e767d;
+      font-size: 13px;
+      padding: 20px;
+    }
   </style>
 </head>
 <body>
@@ -331,6 +596,7 @@
     <h1>Why Did I Block Them?</h1>
     <div class="tabs">
       <button class="tab active" data-tab="blocks">Blocks <span class="count" id="count">0</span></button>
+      <button class="tab" data-tab="stats">Stats</button>
       <button class="tab" data-tab="settings">Settings</button>
     </div>
   </div>
@@ -345,6 +611,12 @@
         <p>No blocked users recorded yet.</p>
         <p>Block someone on Twitter to get started!</p>
       </div>
+    </div>
+  </div>
+
+  <div id="stats-tab" class="tab-content">
+    <div class="stats-container" id="stats-content">
+      <!-- Stats rendered by JS -->
     </div>
   </div>
 

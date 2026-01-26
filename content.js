@@ -274,7 +274,7 @@ function showReasonModal(username) {
         <div class="tbr-categories">
           ${CATEGORIES.map(cat => `
             <label class="tbr-category">
-              <input type="radio" name="tbr-category" value="${cat.id}">
+              <input type="checkbox" name="tbr-category" value="${cat.id}">
               <span>${cat.label}</span>
             </label>
           `).join('')}
@@ -299,12 +299,13 @@ function showReasonModal(username) {
   overlay.querySelector('.tbr-skip-btn').addEventListener('click', () => overlay.remove());
   overlay.querySelector('.tbr-save-btn').addEventListener('click', () => {
     try {
-      const category = overlay.querySelector('input[name="tbr-category"]:checked')?.value;
+      const checkedBoxes = overlay.querySelectorAll('input[name="tbr-category"]:checked');
+      const categories = Array.from(checkedBoxes).map(cb => cb.value);
       const reason = overlay.querySelector('.tbr-reason-input').value.trim();
-      log('Saving block reason:', { username, category, reason, actualTweetData });
+      log('Saving block reason:', { username, categories, reason, actualTweetData });
 
-      if (category || reason || actualTweetData) {
-        saveBlockReason(username, category, reason, actualTweetData);
+      if (categories.length > 0 || reason || actualTweetData) {
+        saveBlockReason(username, categories, reason, actualTweetData);
       }
     } catch (err) {
       console.error('[BlockReasons] Error saving:', err);
@@ -320,12 +321,13 @@ function showReasonModal(username) {
 }
 
 // Save block reason to storage
-function saveBlockReason(username, category, reason, tweetData) {
+function saveBlockReason(username, categories, reason, tweetData) {
   chrome.storage.sync.get(['blocks'], (result) => {
     const blocks = result.blocks || {};
     blocks[username.toLowerCase()] = {
       username: username,
-      category: category || null,
+      categories: categories || [],  // Now an array
+      category: categories && categories.length > 0 ? categories[0] : null,  // Keep for backwards compat
       reason: reason || '',
       tweet: tweetData ? tweetData.text : null,
       tweetUrl: tweetData ? tweetData.url : null,
@@ -394,7 +396,9 @@ function showBlockReasonBanner(blockInfo) {
     const existing = document.getElementById('tbr-banner');
     if (existing) existing.remove();
 
-    const categoryLabel = CATEGORIES.find(c => c.id === blockInfo.category)?.label || '';
+    // Support both old single category and new multiple categories
+    const cats = blockInfo.categories || (blockInfo.category ? [blockInfo.category] : []);
+    const categoryLabels = cats.map(id => CATEGORIES.find(c => c.id === id)?.label).filter(Boolean);
     const dateStr = new Date(blockInfo.date).toLocaleDateString();
 
   const banner = document.createElement('div');
@@ -412,7 +416,7 @@ function showBlockReasonBanner(blockInfo) {
     <div class="tbr-banner-content">
       <div class="tbr-banner-header">
         <strong>You blocked @${blockInfo.username}</strong>
-        ${categoryLabel ? `<span class="tbr-banner-category">${categoryLabel}</span>` : ''}
+        ${categoryLabels.map(label => `<span class="tbr-banner-category">${label}</span>`).join('')}
         <span class="tbr-banner-date">on ${dateStr}</span>
       </div>
       ${tweetContent}
